@@ -175,7 +175,7 @@ errorMsg : ErrorMsg -> Html Msg
 errorMsg addError =
     case addError of
         Just e ->
-            span [] [ text e ]
+            div [ class "notification is-danger" ] [ text e ]
 
         Nothing ->
             empty
@@ -183,44 +183,53 @@ errorMsg addError =
 
 addForm : Name -> Job -> Html Msg
 addForm name job =
-    div [ class "addForm" ]
-        [ input [ class "name", value name, placeholder "名前", onInput NewName ] []
-        , input [ class "job", value job, placeholder "職業", onInput NewJob ] []
-        , input [ type_ "button", class "add", value "追加", onClick NewPerson ] []
+    div [ class "columns" ]
+        [ div [ class "column is-one-quarter" ] [ input [ class "input", type_ "text", value name, placeholder "Name", onInput NewName ] [] ]
+        , div [ class "column is-one-quarter" ] [ input [ class "input", type_ "text", value job, placeholder "Job", onInput NewJob ] [] ]
+        , div [ class "column" ] [ a [ class "button is-medium is-success", onClick NewPerson ] [ text "Add" ] ]
         ]
 
 
 personList : List Person -> EditID -> Name -> Job -> Html Msg
 personList persons editId editName editJob =
-    ul [] <|
-        List.map
-            (\person ->
-                personItem editId editName editJob person
-            )
-            persons
+    table [ class "table" ]
+        [ thead []
+            [ th [] [ text "ID" ]
+            , th [] [ text "Name" ]
+            , th [] [ text "Job" ]
+            , th [] []
+            , th [] []
+            ]
+        , tbody [] <|
+            List.map
+                (\person ->
+                    personItem editId editName editJob person
+                )
+                persons
+        ]
 
 
 personItem : EditID -> Name -> Job -> Person -> Html Msg
 personItem editID editName editJob { id, name, job } =
     let
         item =
-            li []
-                [ span [] [ text <| toString id ]
-                , span [] [ text name ]
-                , span [] [ text job ]
-                , input [ type_ "button", class "edit", value "編集", onClick <| EditStart id name job ] []
-                , input [ type_ "button", class "delete", value "削除", onClick <| DeletePerson id ] []
+            tr []
+                [ td [] [ text <| toString id ]
+                , td [] [ text name ]
+                , td [] [ text job ]
+                , td [] [ a [ class "button", onClick <| EditStart id name job ] [ text "Edit" ] ]
+                , td [] [ a [ class "delete is-large", onClick <| DeletePerson id ] [] ]
                 ]
     in
         case editID of
             Just eid ->
                 if id == eid then
-                    li []
-                        [ span [] [ text <| toString id ]
-                        , input [ value editName, onInput EditName ] []
-                        , input [ value editJob, onInput EditJob ] []
-                        , input [ type_ "button", class "edit", value "確定", onClick EditEnd ] []
-                        , input [ type_ "button", class "delete", value "削除", onClick <| DeletePerson id ] []
+                    tr []
+                        [ td [] [ text <| toString id ]
+                        , td [] [ input [ class "input", type_ "text", value editName, onInput EditName ] [] ]
+                        , td [] [ input [ class "input", type_ "text", value editJob, onInput EditJob ] [] ]
+                        , td [] [ a [ class "button is-primary", onClick EditEnd ] [ text "Confirm" ] ]
+                        , td [] [ a [ class "delete is-large", onClick <| DeletePerson id ] [] ]
                         ]
                 else
                     item
